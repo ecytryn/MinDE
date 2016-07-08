@@ -1,0 +1,61 @@
+define num1 1000 #minDmem
+define num2 600 #minEmem
+define TIME_STOP 5 #sec
+define LENGTH 100 #µm
+
+define Dd 0.06
+define De 0.3
+define Dde 0.06
+define Wed 0.139
+
+graphics opengl
+
+dim 2
+boundaries x 0 LENGTH
+boundaries y 0 LENGTH
+
+species D E DE
+
+boxsize 10
+accuracy 10
+
+difc D(front) Dd
+difc E(front) De
+difc DE(front) Dde
+
+color D red
+display_size D(all) 5
+color E blue
+display_size E(all) 5
+color DE black
+display_size DE(all) 10
+
+time_start 0
+time_stop TIME_STOP
+time_step 0.001
+
+start_surface walls
+action both all reflect
+color both 0 0 0
+panel rect +x 0 0 LENGTH
+panel rect -x LENGTH 0 LENGTH
+panel rect +y 0 0 LENGTH
+panel rect -y 0 LENGTH LENGTH
+end_surface
+
+start_surface membrane
+color both 1 0.7 0
+thickness 1
+panel rect +y 0 0 LENGTH
+end_surface
+
+output_files boxbonny6out.txt
+cmd e molcount boxbonny6out.txt
+
+surface_mol num1 D(front) membrane all all
+surface_mol num2 E(front) membrane all all
+
+reaction rxn6 D(front) + E(front) -> DE(front) Wed
+
+#cmd a keypress Q
+end_file
