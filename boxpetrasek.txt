@@ -1,0 +1,97 @@
+ifundefine LENGTH 
+define LENGTH 2
+endif
+
+define TIME_STOP 100
+define WIDTH 0.5
+define DEPTH 1
+define NUM_BINS 50
+define AVE_OF_TSTEPS 10
+define MODEL petrasek_Me2
+
+define NUM_MIND_CYT DEPTH*LENGTH*WIDTH*2.2*10^3
+define NUM_MINE_CYT DEPTH*LENGTH*WIDTH*1.5*10^3
+define NUM_MIND_MEM 0
+define NUM_MINE_MEM 0
+define NUM_MINDE_MEM 0
+
+# Me2
+define DIF_DD 14
+define DIF_DE 14
+define DIF_Dd 9*10^(-4) # µm^2/s
+define DIF_De 3.6*10^(-3) # µm^2/s
+define DIF_Dde 9*10^(-4) # µm^2/s
+
+define RATE_kD 100 # p/(µm*s)
+define RATE_kdE 5.1*10^(-3) # 1/s
+define RATE_kde 9*10^(-4) # µm/(p*s)
+define RATE_ke 0.3 # 1/s
+
+# Graphical output
+#graphics opengl
+graphics none
+
+# System space and time definitions
+dim 2
+boundaries x 0 LENGTH r
+boundaries y 0 WIDTH r
+time_start 0
+time_stop TIME_STOP
+time_step 0.01 #0.05
+
+boxsize 1
+accuracy 10
+
+# Molecular species and their properties
+species D E DE
+difc D(soln) DIF_DD
+difc D(front) DIF_Dd
+difc E(soln) DIF_DE
+difc E(front) DIF_De
+difc DE(front) DIF_Dde
+
+color D(soln) red
+color D(front) darkred
+color E(soln) blue
+color E(front) darkblue
+color DE(front) black
+display_size all(all) 4
+
+start_surface walls
+action both all reflect
+color both 0 0 0
+panel rect +x 0 0 WIDTH
+panel rect -x LENGTH 0 WIDTH
+panel rect +y 0 0 LENGTH
+panel rect -y 0 WIDTH LENGTH
+end_surface
+
+start_surface membrane
+action both all reflect 
+rate D fsoln front RATE_kD
+color both 1 0.7 0
+thickness 1
+panel rect +y 0 0 LENGTH
+end_surface
+
+output_files MODELDLENGTHout.txt MODELDELENGTHout.txt MODELELENGTHout.txt
+#molcountspace species(state) axis low high bins average filename
+cmd e molcountspace D(front) x 0 LENGTH NUM_BINS 0 WIDTH AVE_OF_TSTEPS MODELDLENGTHout.txt
+cmd e molcountspace DE(front) x 0 LENGTH NUM_BINS 0 WIDTH AVE_OF_TSTEPS MODELDELENGTHout.txt
+cmd e molcountspace E(front) x 0 LENGTH NUM_BINS 0 WIDTH AVE_OF_TSTEPS MODELELENGTHout.txt
+
+# ICs
+mol NUM_MIND_CYT D u u
+mol NUM_MINE_CYT E u u
+#surface_mol NUM_MIND_MEM D(front) membrane all all
+#surface_mol NUM_MIND_MEM E(front) membrane all all
+#surface_mol NUM_MIND_MEM DE(front) membrane all all
+
+# Chemical reactions
+reaction rxn2 D(front) + E(fsoln) -> DE(front) RATE_kdE
+reaction rxn3 D(front) + E(front) -> DE(front) RATE_kde
+reaction rxn4 DE(front) + E(fsoln) -> D(fsoln) + E(front) + E(front) RATE_kdE
+reaction rxn5 DE(front) + E(front) -> D(fsoln) + E(front) + E(front) RATE_kde
+reaction rxn6 E(front) -> E(fsoln) RATE_ke
+
+end_file

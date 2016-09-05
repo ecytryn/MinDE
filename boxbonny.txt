@@ -1,0 +1,118 @@
+ifundefine LENGTH 
+define LENGTH 2
+endif
+
+define TIME_STOP 100
+define WIDTH 0.5
+define DEPTH 1
+define NUM_BINS 50
+define AVE_OF_TSTEPS 10
+define MODEL bonny_invivo
+#define MODEL bonny_invitro
+
+#define NUM_MIND_CYT DEPTH*LENGTH*WIDTH*480 # in vitro
+#define NUM_MINE_CYT DEPTH*LENGTH*WIDTH*700 # in vitro
+define NUM_MIND_CYT DEPTH*LENGTH*WIDTH*2.2*10^3 # in vivo
+define NUM_MINE_CYT DEPTH*LENGTH*WIDTH*1.5*10^3 # in vivo
+define NUM_MIND_MEM 0
+define NUM_MINE_MEM 0
+define NUM_MINDE_MEM 0
+
+# in vivo
+define DIF_DD 14
+define DIF_DE 14
+define DIF_Dd 0.06
+define DIF_De 0.3
+define DIF_Dde 0.06
+define RATE_WD 0.1
+define RATE_WdD 8.8*10^(-3)
+define RATE_WE 6.96*10^(-5)
+define RATE_Wed 0.139
+define RATE_Wdec 0.08
+define RATE_Wdem 1.5
+define RATE_We 0.5
+
+/*
+# in vitro
+define DIF_DD 50
+define DIF_DE 50
+define DIF_Dd 0.3
+define DIF_De 1.8
+define DIF_Dde 0.3
+define RATE_WD 5*10^(-4)
+define RATE_WdD 3.18*10^(-3)
+define RATE_WE 1.36*10^(-4)
+define RATE_Wed 4.9*10^(-3)
+define RATE_Wdec 0.16
+define RATE_Wdem 2.52
+define RATE_We 0.5
+*/
+
+# Graphical output
+#graphics opengl
+graphics none
+
+# System space and time definitions
+dim 2
+boundaries x 0 LENGTH r
+boundaries y 0 WIDTH r
+time_start 0
+time_stop TIME_STOP
+time_step 0.01
+
+boxsize 1
+accuracy 10
+
+# Molecular species and their properties
+species D E DE
+difc D(soln) DIF_DD
+difc D(front) DIF_Dd
+difc E(soln) DIF_DE
+difc E(front) DIF_De
+difc DE(front) DIF_Dde
+color D(soln) red
+color D(front) darkred
+color E(soln) blue
+color E(front) darkblue
+color DE(front) black
+display_size all(all) 4
+
+start_surface walls
+action both all reflect
+color both 0 0 0
+panel rect +x 0 0 WIDTH
+panel rect -x LENGTH 0 WIDTH
+panel rect +y 0 0 LENGTH
+panel rect -y 0 WIDTH LENGTH
+end_surface
+
+start_surface membrane
+action both all reflect 
+rate D fsoln front RATE_WD
+color both 1 0.7 0
+thickness 1
+panel rect +y 0 0 LENGTH panel1
+end_surface
+
+output_files MODEL_D_LENGTHout.txt MODEL_DE_LENGTHout.txt MODEL_E_LENGTHout.txt
+#molcountspace species(state) axis low high bins average filename
+cmd e molcountspace D(front) x 0 LENGTH NUM_BINS 0 WIDTH AVE_OF_TSTEPS MODEL_D_LENGTHout.txt
+cmd e molcountspace DE(front) x 0 LENGTH NUM_BINS 0 WIDTH AVE_OF_TSTEPS MODEL_DE_LENGTHout.txt
+cmd e molcountspace E(front) x 0 LENGTH NUM_BINS 0 WIDTH AVE_OF_TSTEPS MODEL_E_LENGTHout.txt
+
+# ICs
+mol NUM_MIND_CYT D u u
+mol NUM_MINE_CYT E u u
+#surface_mol NUM_MIND_MEM D(front) membrane all all
+#surface_mol NUM_MIND_MEM E(front) membrane all all
+#surface_mol NUM_MIND_MEM DE(front) membrane all all
+
+# Chemical reactions
+reaction rxn2 D(fsoln) + D(front) -> D(front) + D(front) RATE_WdD
+reaction rxn3 E(fsoln) + D(front) -> DE(front) RATE_WE
+reaction rxn4 DE(front) -> D(fsoln) + E(fsoln) RATE_Wdec
+reaction rxn5 DE(front) -> D(fsoln) + E(front) RATE_Wdem
+reaction rxn6 D(front) + E(front) -> DE(front) RATE_Wed
+reaction rxn7 E(front) -> E(fsoln) RATE_We
+
+end_file
