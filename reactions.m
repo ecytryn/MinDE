@@ -3,7 +3,7 @@ function RHS=reactions(model,D,E,u1,u2,u3,u4,u5,u6,u7)
 RHS=zeros(length(u1),9);
 
 switch model
-    case 'Bonny in vitro' % Bonny et al. 2013
+    case 'Bonny_invitro' % Bonny et al. 2013
         % Kinetic parameters
         Dmax=2.75e4; % µm^(-2)
         wD=5e-4;     % µm/s
@@ -20,7 +20,7 @@ switch model
         RHS(:,4)= wE*E.*u1 - wdec*u2 - wdem*u2 + wed*u1.*u3; % DE on membrane
         RHS(:,5)= wdem*u2 - wed*u1.*u3 - we*u3; % E on membrane
         
-    case 'Bonny in vivo' % Bonny et al. 2013
+    case 'Bonny_invivo' % Bonny et al. 2013
         % Kinetic parameters
         Dmax=5.4e3; % µm^(-2)
         wD=0.1;     % µm/s
@@ -37,6 +37,6 @@ switch model
         RHS(:,4)= wE*E.*u1 - wdec*u2 - wdem*u2 + wed*u1.*u3; % DE on membrane
         RHS(:,5)= wdem*u2 - wed*u1.*u3 - we*u3; % E on membrane
         
-    case 'PetrasekMe2'
+    case 'Petrasek_Me2'
         
 end
